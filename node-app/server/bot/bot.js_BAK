@@ -1,0 +1,134 @@
+// bot.js
+// Controls for the python bot
+
+// For reading from the bot's log file
+var fs = require("fs");
+var PythonShell = require("python-shell");
+
+import { BotSettings, default_settings } from './BotSettings';
+
+class Bot {
+  constructor() {
+    this.settings = new BotSettings(default_settings);
+
+    this.DEBUG_ENABLED = true;
+
+    this.APP_PATH      = "/home/ubuntu/dev/mern-test-app/";
+    this.BOT_PATH      = this.APP_PATH + "bot/instabot-py/";
+    this.BOT_FILE_NAME = "example.py";
+    this.LOG_PATH      = this.APP_PATH  + "bot/logs/";
+    this.LOG_PREFIX    = "bot";
+
+    this.isRunning     = false;
+    this.timeStamp     = 0;
+    this.logFile       = "";
+    this.logContents   = "";
+    this.process       = require("child_process");
+    this.pyshell       = null;
+
+    this.debugLog("new Bot object created.");
+  }
+
+  getNewTimeStamp() {
+    return "" +  new Date().getTime();
+  }
+
+  debugLog(text) {
+    if(this.DEBUG_ENABLED) { console.log("Bot Debug:  " + text); }
+  }
+
+  getString(str) {
+    switch (str) {
+      case "LOG_FILE_NAME":
+        return this.LOG_PREFIX+"-"+this.timeStamp+".log";
+
+      case "LOG_PATH_AND_NAME":
+        return this.LOG_PATH+this.getString("LOG_FILE_NAME");
+
+      case "RUN_BOT":
+        return "python3 "+this.BOT_PATH+this.BOT_FILE_NAME+" "+this.getString("LOG_FILE_NAME");
+
+      case "KILL_BOT":
+        return "pkill -f "+this.BOT_FILE_NAME;
+
+      case "EXEC_START":
+        return "cd "+this.LOG_PATH+" && "+this.getString("RUN_BOT");
+
+      case "EXEC_STOP":
+        return this.getString("KILL_BOT");
+
+      default:
+        return "";
+    }
+  }
+
+  beginProcess() {
+    this.pyshell = new PythonShell("start-bot.py", {
+        mode:       "text",
+        pythonPath: "python3",
+        scriptPath: "/home/ubuntu/dev/mern-test-app/bot/"
+      });
+      this.pyshell.on("message", (message) => {
+        console.log(message);
+      });
+      this.pyshell.on("error", (err) => {
+        if (err.exitCode == 0)
+          this.debugLog("Process exited normally with exit code 0.");
+        else
+          this.debugLog(err);
+      });
+      this.pyshell.on("close", () => {
+        this.debugLog("Process closed.");
+      });
+      this.debugLog("Starting python-shell bot process.");
+  }
+
+  endProcess() {
+    this.process.exec("pkill -f start-bot.py");
+    this.debugLog("Stopping python-shell bot process.");
+  }
+
+  // Starting the bot
+  start() {
+    this.debugLog("start() called.");
+    if (!this.isRunning) {
+      // Set a new time stamp for the log file
+      this.timeStamp   = this.getNewTimeStamp();
+      this.logFile     = this.getString("LOG_PATH_AND_NAME");
+      this.logContents = "";
+
+      // python-shell start
+      this.beginProcess();
+/*
+      let command = this.getString("EXEC_START");
+      this.debugLog("exec: " + command);
+      // Start the process
+      this.process.exec(command);
+*/
+      this.isRunning = true;
+
+//      this.debugLog("Logging to file:  "+this.logFile);
+    } else {
+      this.debugLog("bot already started.");
+    }
+  }
+
+  // Stopping the bot
+  stop() {
+    this.debugLog("stop() called.");
+    if (this.isRunning) {
+      // python-shell stop
+      this.endProcess();
+/*
+      let command = this.getString("EXEC_STOP");
+      this.debugLog("exec: " + command);
+      this.process.exec(command);
+*/
+      this.isRunning = false;
+    } else {
+      this.debugLog("bot already stopped.");
+    }
+  }
+}
+
+export default Bot;
