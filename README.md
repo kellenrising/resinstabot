@@ -1,2 +1,2 @@
 # resinstabot
-Web app automation project
+A test app using React
