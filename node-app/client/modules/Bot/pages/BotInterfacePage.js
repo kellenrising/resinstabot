@@ -10,7 +10,8 @@ import styles from './BotInterfacePage.css';
 import { startBotRequest, stopBotRequest, startBotWithJsonRequest } from '../BotActions';
 
 // Default bot parameters
-var botJsonData = require('/home/ubuntu/dev/mern-test-app/bot/json/bot_parameters.json');
+//var botJsonData = require('/home/ubuntu/dev/mern-test-app/bot/json/bot_parameters.json');
+import * as botJsonData from '../../../../bot/json/bot_parameters.json';
 var botParameters = botJsonData.bot_parameters;
 
 var types = {
