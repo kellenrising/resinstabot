@@ -11,9 +11,6 @@ import config from '../webpack.config.dev';
 import webpackDevMiddleware from 'webpack-dev-middleware';
 import webpackHotMiddleware from 'webpack-hot-middleware';
 
-// VARS FOR TESTING
-const testing_text = "@ 35.167.112.149:8000";
-
 // Initialize the Express App
 const app = new Express();
 
@@ -148,7 +145,7 @@ app.use((req, res, next) => {
 // start app
 app.listen(serverConfig.port, (error) => {
   if (!error) {
-    console.log(`MERN is running on port: ${serverConfig.port}! Build something amazing! ` + testing_text); // eslint-disable-line
+    console.log(`MERN is running on port: ${serverConfig.port}! Build something amazing!`); // eslint-disable-line
   }
 });
 
